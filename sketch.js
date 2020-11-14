@@ -5,12 +5,17 @@ https://itp.nyu.edu/physcomp/labs/labs-serial-communication/lab-serial-input-to-
 */
 
 var serial;   // variable to hold an instance of the serialport library
-var portName = '/dev/cu.usbserial-DN01DW79';    // fill in your serial port name here
+var portName = '/COM3';    // fill in your serial port name here
 var inData;   // variable to hold the input data from Arduino
 
 var minWidth = 600;   //set min width and height for canvas
 var minHeight = 400;
 var width, height;    // actual width and height for the sketch
+
+
+var rightSlider; // add a slider component
+var outData; // for data output
+
 
 function setup() {
   // set the canvas to match the window size
@@ -40,6 +45,11 @@ function setup() {
 
   serial.list();                      // list the serial ports
   serial.open(portName);              // open a serial port
+
+  // add the following to setup the slider
+rightSlider = createSlider(0, 255, 0); // indicate the value range for slider
+rightSlider.position(width/2 + (width/2-300)/2 , height-100);
+rightSlider.style('width', '300px');
 }
 
 function draw() {
@@ -75,6 +85,23 @@ function draw() {
   // draw the separator between frames
   fill(255);
   rect(width/2 - 0.5, 0, 1, height);
+
+  // The following changes are for the right side to control Arduino
+
+  // right side: read the value from browser
+  var rightBrightness = map(rightSlider.value(), 0, 255, 0, 255); // convert slider input to brightness
+  fill(rightBrightness); // change the visualization in p5
+  rect(width/2,0,width/2,height);
+
+  outData = rightBrightness;  // setup the serial output
+  serial.write(outData); // write to serial for Arduino to pickup
+
+  var textRColor = map(rightBrightness, 0, 255, 255,0); // draw the text
+  fill(textRColor);
+  textSize(16);
+  text("ME", width - 70, 30);
+  textSize(12);
+  text("BRIGHTNESS LEVEL: " + rightBrightness, width - 170, 50);
 }
 
 // Following functions print the serial communication status to the console for debugging purposes
